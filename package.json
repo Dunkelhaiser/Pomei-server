@@ -1,0 +1,40 @@
+{
+    "name": "pomei-server",
+    "private": true,
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "nodemon ./src/app.ts"
+    },
+    "author": "KaeserOfHonour",
+    "license": "ISC",
+    "dependencies": {
+        "connect-pg-simple": "^8.0.0",
+        "cors": "^2.8.5",
+        "dotenv": "^16.0.3",
+        "express": "^4.18.2",
+        "pg": "^8.10.0"
+    },
+    "devDependencies": {
+        "@types/connect-pg-simple": "^7.0.0",
+        "@types/cors": "^2.8.13",
+        "@types/dotenv": "^8.2.0",
+        "@types/express": "^4.17.17",
+        "@types/node": "^18.15.1",
+        "@types/pg": "^8.6.6",
+        "@typescript-eslint/eslint-plugin": "^5.54.1",
+        "@typescript-eslint/parser": "^5.54.1",
+        "eslint": "^8.36.0",
+        "eslint-config-airbnb": "^19.0.4",
+        "eslint-config-airbnb-typescript": "^17.0.0",
+        "eslint-config-prettier": "^8.7.0",
+        "eslint-plugin-import": "^2.27.5",
+        "eslint-plugin-prettier": "^4.2.1",
+        "nodemon": "^2.0.21",
+        "prettier": "^2.8.4",
+        "ts-node": "^10.9.1",
+        "typescript": "^4.9.5"
+    }
+}
