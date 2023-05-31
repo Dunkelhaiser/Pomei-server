@@ -1,11 +1,5 @@
-import { Pool } from "pg";
+import { PrismaClient } from "@prisma/client";
 
-const pool = new Pool({
-    user: process.env.PGUSER,
-    password: process.env.PGPASSWORD,
-    host: process.env.PGHOST,
-    port: Number(process.env.PGPORT),
-    database: process.env.PGDATABASE,
-});
+const db = new PrismaClient();
 
-export default pool;
+export default db;
