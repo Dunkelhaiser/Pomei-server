@@ -3,6 +3,6 @@ import { loadNotes } from "../controllers/notesController";
 
 const router = Router();
 
-router.get("/notes", loadNotes);
+router.get("/", loadNotes);
 
 export default router;
