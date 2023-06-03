@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { z as zod } from "zod";
+import { AuthRequest, Payload } from "../../models/AuthRequest";
 
 const schema = zod
     .object({
@@ -51,20 +52,13 @@ export const validateSignIn = async (req: Request, res: Response, next: NextFunc
     }
 };
 
-interface Payload {
-    id: string;
-}
-interface AuthRequest extends Request {
-    user?: Payload;
-}
-
 export const isAuthorized = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { authorization } = req.headers;
         const token = authorization?.split(" ")[1];
         if (!token) throw new Error("Unauthorized");
         const decodedToken = jwt.verify(token, `${process.env.JWT_ACCESS_SECRET}`) as Payload;
-        req.user = decodedToken;
+        req.user = decodedToken.id;
         next();
     } catch (err) {
         res.status(401).json({

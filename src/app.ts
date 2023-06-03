@@ -2,6 +2,7 @@
 import express from "express";
 import path from "path";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 
 dotenv.config({ path: path.join(__dirname, ".env") });
@@ -11,6 +12,7 @@ import authRoutes from "./routes/auth";
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser());
 app.use(cors({ credentials: true, origin: `${process.env.CLIENT}` }));
 
 app.use("/notes", notesRoutes);
