@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import db from "../../db";
 
 type ConflictError = {
@@ -68,6 +69,43 @@ export const checkAvailableData = async (req: Request, res: Response) => {
         }
         res.status(200).json({
             status: "Data is available",
+        });
+    } catch (err) {
+        res.status(400).json({
+            error: "Invalid user data",
+        });
+    }
+};
+
+export const signIn = async (req: Request, res: Response) => {
+    try {
+        const { login, password } = req.body;
+        const existingUser = await db.user.findFirst({
+            where: {
+                OR: [{ email: login }, { username: login }],
+            },
+        });
+        if (!existingUser) {
+            res.status(401).json({
+                error: "Invalid username/email or password",
+            });
+            return;
+        }
+        const validPassword = await bcrypt.compare(password, existingUser.password);
+        if (!validPassword) {
+            res.status(401).json({
+                error: "Invalid username/email or password",
+            });
+            return;
+        }
+        const token = jwt.sign(
+            { id: existingUser.id, username: existingUser.username, email: existingUser.email },
+            `${process.env.JWT_ACCESS_SECRET}`,
+            { expiresIn: "2h" }
+        );
+        res.status(200).json({
+            token,
+            user: existingUser.id,
         });
     } catch (err) {
         res.status(400).json({
