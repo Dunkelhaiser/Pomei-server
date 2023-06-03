@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { z as zod } from "zod";
 
 const schema = zod
@@ -46,6 +47,20 @@ export const validateSignIn = async (req: Request, res: Response, next: NextFunc
     } catch (err) {
         res.status(400).json({
             status: (err as zod.ZodError).issues[0].message,
+        });
+    }
+};
+
+export const isAuthorized = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { authorization } = req.headers;
+        const token = authorization?.split(" ")[1];
+        if (!token) throw new Error("Unauthorized");
+        const decodedToken = await jwt.verify(token, `${process.env.JWT_ACCESS_SECRET}`);
+        req.user = decodedToken;
+    } catch (err) {
+        res.status(401).json({
+            error: "Unauthorized",
         });
     }
 };
