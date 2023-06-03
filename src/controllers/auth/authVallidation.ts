@@ -51,13 +51,21 @@ export const validateSignIn = async (req: Request, res: Response, next: NextFunc
     }
 };
 
-export const isAuthorized = async (req: Request, res: Response, next: NextFunction) => {
+interface Payload {
+    id: string;
+}
+interface AuthRequest extends Request {
+    user?: Payload;
+}
+
+export const isAuthorized = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { authorization } = req.headers;
         const token = authorization?.split(" ")[1];
         if (!token) throw new Error("Unauthorized");
-        const decodedToken = await jwt.verify(token, `${process.env.JWT_ACCESS_SECRET}`);
+        const decodedToken = jwt.verify(token, `${process.env.JWT_ACCESS_SECRET}`) as Payload;
         req.user = decodedToken;
+        next();
     } catch (err) {
         res.status(401).json({
             error: "Unauthorized",

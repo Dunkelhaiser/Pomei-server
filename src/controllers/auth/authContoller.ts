@@ -98,18 +98,70 @@ export const signIn = async (req: Request, res: Response) => {
             });
             return;
         }
-        const token = jwt.sign(
-            { id: existingUser.id, username: existingUser.username, email: existingUser.email },
-            `${process.env.JWT_ACCESS_SECRET}`,
-            { expiresIn: "2h" }
-        );
+        const accessToken = jwt.sign({ id: existingUser.id }, `${process.env.JWT_ACCESS_SECRET}`, { expiresIn: "30m" });
+        const refreshToken = jwt.sign({ id: existingUser.id }, `${process.env.JWT_REFRESH_SECRET}`, { expiresIn: "30d" });
+        await db.refreshToken.create({
+            data: {
+                token: refreshToken,
+                userId: existingUser.id,
+            },
+        });
         res.status(200).json({
-            token,
+            accessToken,
             user: existingUser.id,
         });
     } catch (err) {
         res.status(400).json({
             error: "Invalid user data",
+        });
+    }
+};
+
+interface Payload {
+    id: string;
+}
+interface AuthRequest extends Request {
+    user?: Payload;
+}
+
+export const getAuthUser = async (req: AuthRequest, res: Response) => {
+    try {
+        const { id } = req.user as Payload;
+        const user = await db.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                age: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+        res.status(200).json({
+            user,
+        });
+    } catch (err) {
+        res.status(401).json({
+            error: "Unauthorized",
+        });
+    }
+};
+
+export const refreshTokenFunc = async (req: Request, res: Response) => {
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) throw new Error("Unauthorized");
+        const decodedToken = jwt.verify(refreshToken, `${process.env.JWT_REFRESH_SECRET}`) as Payload;
+        const token = jwt.sign({ id: decodedToken.id }, `${process.env.JWT_ACCESS_SECRET}`, { expiresIn: "2h" });
+        res.status(200).json({
+            token,
+        });
+    } catch (err) {
+        res.status(401).json({
+            error: "Unauthorized",
         });
     }
 };

@@ -23,6 +23,7 @@ model User{
   updatedAt DateTime @updatedAt
   notes Note[]
   folders Folder[]
+  refreshTokens RefreshToken[]
 
   @@index([username], name: "username")
   @@index([email], name: "email")
@@ -55,4 +56,15 @@ model Folder{
     notes Note[]
 
     @@index([title], name: "folderTitle")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  revoked   Boolean  @default(false)
+  expiresAt DateTime
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
 }
