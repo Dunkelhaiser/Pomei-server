@@ -24,6 +24,8 @@ model User{
   notes Note[]
   folders Folder[]
   refreshTokens RefreshToken[]
+  isEmailVerified        Boolean        @default(false)
+  emailVerificationToken String?
 
   @@index([username], name: "username")
   @@index([email], name: "email")
