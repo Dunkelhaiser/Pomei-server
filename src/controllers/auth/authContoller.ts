@@ -147,6 +147,23 @@ export const signOut = async (req: AuthRequest, res: Response) => {
     }
 };
 
+export const terminateAllSessions = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user;
+        console.log(userId);
+        await db.refreshToken.deleteMany({
+            where: {
+                userId,
+            },
+        });
+        res.sendStatus(204);
+    } catch (err) {
+        res.status(401).json({
+            error: "Unauthorized",
+        });
+    }
+};
+
 export const getAuthUser = async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.user;
