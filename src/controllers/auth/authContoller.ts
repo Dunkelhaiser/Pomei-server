@@ -150,7 +150,6 @@ export const signOut = async (req: AuthRequest, res: Response) => {
 export const terminateAllSessions = async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.user;
-        console.log(userId);
         await db.refreshToken.deleteMany({
             where: {
                 userId,
