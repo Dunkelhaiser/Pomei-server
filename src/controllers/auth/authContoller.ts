@@ -384,17 +384,33 @@ export const resetPasswordRequest = async (req: Request, res: Response) => {
 
         const resetPasswordToken = crypto.randomBytes(20).toString("hex");
 
-        await db.user.update({
-            where: { id: user.id },
-            data: {
-                resetPasswordEmail: {
-                    create: {
-                        token: resetPasswordToken,
-                        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
-                    },
-                },
+        const existingResetPasswordEmail = await db.resetPasswordEmail.findFirst({
+            where: {
+                userId: user.id,
             },
         });
+
+        if (existingResetPasswordEmail) {
+            await db.resetPasswordEmail.update({
+                where: { id: existingResetPasswordEmail.id },
+                data: {
+                    token: resetPasswordToken,
+                    expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+                },
+            });
+        } else {
+            await db.user.update({
+                where: { id: user.id },
+                data: {
+                    resetPasswordEmail: {
+                        create: {
+                            token: resetPasswordToken,
+                            expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+                        },
+                    },
+                },
+            });
+        }
 
         const mailOptions = {
             from: process.env.GMAIL_ADDRESS,
