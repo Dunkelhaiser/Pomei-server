@@ -26,6 +26,7 @@ model User{
   refreshTokens RefreshToken[]
   isVerified        Boolean        @default(false)
   verificationEmail VerificationEmail?
+  resetPasswordEmail ResetPasswordEmail?
 
   @@index([username], name: "username")
   @@index([email], name: "email")
@@ -71,6 +72,15 @@ model RefreshToken {
 }
 
 model VerificationEmail {
+  id          String    @id @default(uuid())
+  token       String    @unique
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  userId      String    @unique
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ResetPasswordEmail {
   id          String    @id @default(uuid())
   token       String    @unique
   createdAt   DateTime  @default(now())

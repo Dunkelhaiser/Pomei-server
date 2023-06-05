@@ -5,7 +5,7 @@ import { AuthRequest, Payload } from "../../models/AuthRequest";
 
 const usernameRegex = /^(?!.*\.\.)(?!.*\.$)[\w_]+$/;
 
-const schema = zod
+const shcemaSignUp = zod
     .object({
         username: zod
             .string()
@@ -29,7 +29,7 @@ const schema = zod
 export const validateSignUp = async (req: Request, res: Response, next: NextFunction) => {
     const formData = req.body;
     try {
-        await schema.parseAsync(formData);
+        await shcemaSignUp.parseAsync(formData);
         next();
     } catch (err) {
         res.status(400).json({
@@ -47,6 +47,48 @@ export const validateSignIn = async (req: Request, res: Response, next: NextFunc
     const formData = req.body;
     try {
         await schemaSignIn.parseAsync(formData);
+        next();
+    } catch (err) {
+        res.status(400).json({
+            status: (err as zod.ZodError).issues[0].message,
+        });
+    }
+};
+
+const schemaResetPasswordRequest = zod.object({
+    email: zod.string().nonempty({ message: "Enter your email" }).email({ message: "Enter a valid email" }),
+});
+
+export const validateResetPasswordRequest = async (req: Request, res: Response, next: NextFunction) => {
+    const formData = req.body;
+    try {
+        await schemaResetPasswordRequest.parseAsync(formData);
+        next();
+    } catch (err) {
+        res.status(400).json({
+            status: (err as zod.ZodError).issues[0].message,
+        });
+    }
+};
+
+const schemaResetPassword = zod
+    .object({
+        password: zod
+            .string()
+            .nonempty({ message: "Enter your password" })
+            .min(6, { message: "Password must be at least 6 characters long" })
+            .max(36, { message: "Password must be at maximum 36 characters long" }),
+        confirmPassword: zod.string().nonempty({ message: "Confirm your password" }),
+    })
+    .refine((schemaData) => schemaData.password === schemaData.confirmPassword, {
+        message: "Passwords must match",
+        path: ["confirmPassword"],
+    });
+
+export const validateResetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    const formData = req.body;
+    try {
+        await schemaResetPassword.parseAsync(formData);
         next();
     } catch (err) {
         res.status(400).json({

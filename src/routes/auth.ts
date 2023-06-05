@@ -8,8 +8,17 @@ import {
     signOut,
     terminateAllSessions,
     verifyUser,
+    resetPasswordRequest,
+    resetPassword,
+    checkResetPasswordToken,
 } from "../controllers/auth/authContoller";
-import { isAuthorized, validateSignIn, validateSignUp } from "../controllers/auth/authVallidation";
+import {
+    isAuthorized,
+    validateResetPassword,
+    validateResetPasswordRequest,
+    validateSignIn,
+    validateSignUp,
+} from "../controllers/auth/authVallidation";
 
 const router = Router();
 
@@ -21,5 +30,8 @@ router.get("/refresh_token", handleRefreshToken);
 router.get("/sign_out", signOut);
 router.get("/terminate_all_sessions", isAuthorized, terminateAllSessions);
 router.get("/verify_user/:token", verifyUser);
+router.post("/reset_password_request", validateResetPasswordRequest, resetPasswordRequest);
+router.post("/reset_password/:token", validateResetPassword, resetPassword);
+router.post("/reset_password_check/:token", checkResetPasswordToken);
 
 export default router;
