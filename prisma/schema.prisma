@@ -24,8 +24,8 @@ model User{
   notes Note[]
   folders Folder[]
   refreshTokens RefreshToken[]
-  isEmailVerified        Boolean        @default(false)
-  emailVerificationToken String?
+  isVerified        Boolean        @default(false)
+  verificationEmail VerificationEmail?
 
   @@index([username], name: "username")
   @@index([email], name: "email")
@@ -68,4 +68,13 @@ model RefreshToken {
   updatedAt   DateTime @updatedAt
   userId      String
   User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationEmail {
+  id          String    @id @default(uuid())
+  token       String    @unique
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  userId      String    @unique
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

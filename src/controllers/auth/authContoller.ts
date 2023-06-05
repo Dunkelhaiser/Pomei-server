@@ -1,8 +1,28 @@
 import { Request, Response } from "express";
+import crypto from "crypto";
+import { createTransport } from "nodemailer";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import db from "../../db";
 import { AuthRequest, Payload } from "../../models/AuthRequest";
+
+const transporter = createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.GMAIL_ADDRESS,
+        pass: process.env.GMAIL_PASSWORD,
+    },
+});
+
+const sendVerificationEmail = async (email: string, token: string) => {
+    const mailOptions = {
+        from: process.env.GMAIL_ADDRESS,
+        to: email,
+        subject: "Pomei - Verification",
+        html: `<h1>Click <a href="${process.env.CLIENT}/verify/${token}">here</a> to verify your account</h1>`,
+    };
+    await transporter.sendMail(mailOptions);
+};
 
 type ConflictError = {
     username: string;
@@ -40,15 +60,39 @@ export const signUp = async (req: Request, res: Response) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 12);
-        await db.user.create({
+        const verificationToken = crypto.randomBytes(20).toString("hex");
+
+        const createdUser = await db.user.create({
             data: {
                 username,
                 email,
                 password: hashedPassword,
+                verificationEmail: {
+                    create: {
+                        token: verificationToken,
+                        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+                    },
+                },
             },
         });
+
+        await sendVerificationEmail(email, verificationToken);
+
+        setTimeout(async () => {
+            const user = await db.user.findUnique({
+                where: { id: createdUser.id },
+                include: { verificationEmail: true },
+            });
+
+            if (!user || user.isVerified) {
+                return;
+            }
+
+            await db.user.delete({ where: { id: createdUser.id } });
+        }, 60 * 60 * 1000);
+
         res.status(201).json({
-            status: "Sign up successful",
+            status: "Verification email sent",
         });
     } catch (err) {
         res.status(400).json({
@@ -96,6 +140,12 @@ export const signIn = async (req: Request, res: Response) => {
         if (!validPassword) {
             res.status(401).json({
                 error: "Invalid username/email or password",
+            });
+            return;
+        }
+        if (!existingUser.isVerified) {
+            res.status(403).json({
+                error: "Account is not verified",
             });
             return;
         }
@@ -213,5 +263,54 @@ export const handleRefreshToken = async (req: Request, res: Response) => {
         res.status(401).json({
             error: "Unauthorized",
         });
+    }
+};
+
+export const verifyUser = async (req: Request, res: Response) => {
+    try {
+        const { token } = req.params;
+        const verificationEmail = await db.verificationEmail.findFirst({
+            where: {
+                token,
+            },
+        });
+
+        if (!verificationEmail) {
+            res.status(404).json({ message: "Invalid verification token" });
+            return;
+        }
+
+        const user = await db.user.findFirst({
+            where: {
+                verificationEmail: {
+                    token,
+                },
+            },
+        });
+
+        if (!user) {
+            res.status(404).json({ message: "Invalid verification token" });
+            return;
+        }
+
+        const isExpired = new Date() > verificationEmail.expiresAt;
+
+        if (isExpired) {
+            res.status(403).json({ message: "Verification has expired" });
+            return;
+        }
+
+        await db.user.update({
+            where: { id: user.id },
+            data: { isVerified: true, verificationEmail: undefined },
+        });
+
+        await db.verificationEmail.delete({
+            where: { id: verificationEmail.id },
+        });
+
+        res.status(200).json({ message: "Account verified successfully" });
+    } catch (err) {
+        res.status(403).json({ message: "Invalid verification token" });
     }
 };

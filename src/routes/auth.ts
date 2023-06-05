@@ -7,6 +7,7 @@ import {
     handleRefreshToken,
     signOut,
     terminateAllSessions,
+    verifyUser,
 } from "../controllers/auth/authContoller";
 import { isAuthorized, validateSignIn, validateSignUp } from "../controllers/auth/authVallidation";
 
@@ -19,5 +20,6 @@ router.get("/get_auth_user", isAuthorized, getAuthUser);
 router.get("/refresh_token", handleRefreshToken);
 router.get("/sign_out", signOut);
 router.get("/terminate_all_sessions", isAuthorized, terminateAllSessions);
+router.get("/verify_user/:token", verifyUser);
 
 export default router;
