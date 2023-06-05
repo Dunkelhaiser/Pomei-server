@@ -405,6 +405,12 @@ export const resetPasswordRequest = async (req: Request, res: Response) => {
 
         await transporter.sendMail(mailOptions);
 
+        setTimeout(async () => {
+            await db.resetPasswordEmail.deleteMany({
+                where: { token: resetPasswordToken },
+            });
+        }, 60 * 60 * 1000);
+
         res.status(201).json({
             message: "Reset password email sent",
         });
