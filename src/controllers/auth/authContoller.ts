@@ -6,6 +6,8 @@ import jwt from "jsonwebtoken";
 import db from "../../db";
 import { AuthRequest, Payload } from "../../models/AuthRequest";
 
+const ONE_HOUR = 60 * 60 * 1000;
+
 const transporter = createTransport({
     service: "gmail",
     auth: {
@@ -70,7 +72,7 @@ export const signUp = async (req: Request, res: Response) => {
                 verificationEmail: {
                     create: {
                         token: verificationToken,
-                        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+                        expiresAt: new Date(Date.now() + ONE_HOUR),
                     },
                 },
             },
@@ -89,7 +91,7 @@ export const signUp = async (req: Request, res: Response) => {
             }
 
             await db.user.delete({ where: { id: createdUser.id } });
-        }, 60 * 60 * 1000);
+        }, ONE_HOUR);
 
         res.status(201).json({
             status: "Verification email sent",
@@ -270,25 +272,16 @@ export const verifyUser = async (req: Request, res: Response) => {
     try {
         const { token } = req.params;
         const verificationEmail = await db.verificationEmail.findFirst({
-            where: {
-                token,
-            },
+            where: { token },
         });
-
-        if (!verificationEmail) {
-            res.status(404).json({ message: "Invalid verification token" });
-            return;
-        }
 
         const user = await db.user.findFirst({
             where: {
-                verificationEmail: {
-                    token,
-                },
+                verificationEmail: { token },
             },
         });
 
-        if (!user) {
+        if (!user || !verificationEmail) {
             res.status(404).json({ message: "Invalid verification token" });
             return;
         }
@@ -342,7 +335,7 @@ export const verifyUser = async (req: Request, res: Response) => {
 //                 verificationEmail: {
 //                     create: {
 //                         token: verificationToken,
-//                         expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+//                         expiresAt: new Date(Date.now() + ONE_HOUR),
 //                     },
 //                 },
 //             },
@@ -356,7 +349,7 @@ export const verifyUser = async (req: Request, res: Response) => {
 //             }
 
 //             await db.user.delete({ where: { id: user.id } });
-//         }, 60 * 60 * 1000);
+//         }, ONE_HOUR);
 
 //         res.status(201).json({
 //             status: "Verification email sent",
@@ -371,11 +364,7 @@ export const verifyUser = async (req: Request, res: Response) => {
 export const resetPasswordRequest = async (req: Request, res: Response) => {
     try {
         const { email } = req.body;
-        const user = await db.user.findFirst({
-            where: {
-                email,
-            },
-        });
+        const user = await db.user.findFirst({ where: { email } });
 
         if (!user) {
             res.status(404).json({ message: "User not found" });
@@ -383,32 +372,26 @@ export const resetPasswordRequest = async (req: Request, res: Response) => {
         }
 
         const resetPasswordToken = crypto.randomBytes(20).toString("hex");
+        const expiresAt = new Date(Date.now() + ONE_HOUR);
 
         const existingResetPasswordEmail = await db.resetPasswordEmail.findFirst({
-            where: {
-                userId: user.id,
-            },
+            where: { userId: user.id },
         });
+
+        const resetPasswordEmailData = {
+            token: resetPasswordToken,
+            expiresAt,
+        };
 
         if (existingResetPasswordEmail) {
             await db.resetPasswordEmail.update({
                 where: { id: existingResetPasswordEmail.id },
-                data: {
-                    token: resetPasswordToken,
-                    expiresAt: new Date(Date.now() + 60 * 60 * 1000),
-                },
+                data: resetPasswordEmailData,
             });
         } else {
             await db.user.update({
                 where: { id: user.id },
-                data: {
-                    resetPasswordEmail: {
-                        create: {
-                            token: resetPasswordToken,
-                            expiresAt: new Date(Date.now() + 60 * 60 * 1000),
-                        },
-                    },
-                },
+                data: { resetPasswordEmail: { create: resetPasswordEmailData } },
             });
         }
 
@@ -422,10 +405,8 @@ export const resetPasswordRequest = async (req: Request, res: Response) => {
         await transporter.sendMail(mailOptions);
 
         setTimeout(async () => {
-            await db.resetPasswordEmail.deleteMany({
-                where: { token: resetPasswordToken },
-            });
-        }, 60 * 60 * 1000);
+            await db.resetPasswordEmail.deleteMany({ where: { token: resetPasswordToken } });
+        }, ONE_HOUR);
 
         res.status(201).json({
             message: "Reset password email sent",
@@ -441,25 +422,14 @@ export const checkResetPasswordToken = async (req: Request, res: Response) => {
     try {
         const { token } = req.params;
         const resetPasswordEmail = await db.resetPasswordEmail.findFirst({
-            where: {
-                token,
-            },
+            where: { token },
         });
-
-        if (!resetPasswordEmail) {
-            res.status(404).json({ message: "Invalid reset password token" });
-            return;
-        }
 
         const user = await db.user.findFirst({
-            where: {
-                resetPasswordEmail: {
-                    token,
-                },
-            },
+            where: { resetPasswordEmail: { token } },
         });
 
-        if (!user) {
+        if (!resetPasswordEmail || !user) {
             res.status(404).json({ message: "Invalid reset password token" });
             return;
         }
@@ -468,7 +438,6 @@ export const checkResetPasswordToken = async (req: Request, res: Response) => {
 
         if (isExpired) {
             res.status(403).json({ message: "Reset password link has expired" });
-            return;
         }
     } catch (err) {
         res.status(403).json({ message: "Invalid reset password token" });
@@ -480,25 +449,14 @@ export const resetPassword = async (req: Request, res: Response) => {
         const { token } = req.params;
         const { password } = req.body;
         const resetPasswordEmail = await db.resetPasswordEmail.findFirst({
-            where: {
-                token,
-            },
+            where: { token },
         });
-
-        if (!resetPasswordEmail) {
-            res.status(404).json({ message: "Invalid reset password token" });
-            return;
-        }
 
         const user = await db.user.findFirst({
-            where: {
-                resetPasswordEmail: {
-                    token,
-                },
-            },
+            where: { resetPasswordEmail: { token } },
         });
 
-        if (!user) {
+        if (!resetPasswordEmail || !user) {
             res.status(404).json({ message: "Invalid reset password token" });
             return;
         }
