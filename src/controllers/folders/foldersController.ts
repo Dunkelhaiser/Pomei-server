@@ -165,3 +165,38 @@ export const pinFolder = async (req: AuthRequest, res: Response) => {
         });
     }
 };
+
+export const getNotes = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user;
+        const folderId = req.params.id;
+
+        const folder = await db.folder.findFirst({
+            where: {
+                AND: [{ id: folderId }, { userId }],
+            },
+        });
+
+        if (!folder) {
+            res.status(404).json({
+                status: "not found",
+            });
+            return;
+        }
+
+        const results = await db.note.findMany({
+            where: {
+                folderId,
+            },
+        });
+
+        res.status(200).json({
+            status: "success",
+            notes: results,
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: "error",
+        });
+    }
+};

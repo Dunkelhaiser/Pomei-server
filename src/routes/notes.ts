@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { isAuthorized } from "../controllers/auth/authVallidation";
 import {
+    addToFolder,
     archiveNote,
     createNote,
     deleteNote,
@@ -8,6 +9,7 @@ import {
     loadNote,
     loadNotes,
     pinNote,
+    removeFromFolder,
     updateNote,
 } from "../controllers/notes/notesController";
 import { validateNote } from "../controllers/notes/notesVallidation";
@@ -22,5 +24,7 @@ router.delete("/:id", isAuthorized, deleteNote);
 router.post("/duplicate/:id", isAuthorized, duplicateNote);
 router.put("/archive/:id", isAuthorized, archiveNote);
 router.put("/pin/:id", isAuthorized, pinNote);
+router.post("/folder/:id", isAuthorized, addToFolder);
+router.delete("/folder/:id", isAuthorized, removeFromFolder);
 
 export default router;
