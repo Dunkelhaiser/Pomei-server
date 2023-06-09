@@ -34,8 +34,8 @@ model User{
 
 model Note{
     id String @id @default(uuid())
-    title String @db.VarChar(255)
-    content String
+    title String? @db.VarChar(255)
+    content String? @db.Text
     isPinned Boolean @default(false)
     isArchived Boolean @default(false)
     createdAt DateTime @default(now())

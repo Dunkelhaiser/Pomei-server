@@ -187,3 +187,101 @@ export const loadNote = async (req: AuthRequest, res: Response) => {
         });
     }
 };
+
+export const archiveNote = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user;
+        const noteId = req.params.id;
+        const { isArchived } = req.query;
+
+        if (isArchived !== "true" && isArchived !== "false") {
+            res.status(400).json({
+                status: "invalid input",
+            });
+            return;
+        }
+
+        const note = await db.note.findFirst({
+            where: {
+                AND: [{ id: noteId }, { userId }],
+            },
+        });
+
+        if (!note) {
+            res.status(404).json({
+                status: "not found",
+            });
+            return;
+        }
+
+        const result = await db.note.update({
+            where: {
+                id: noteId,
+            },
+            data: {
+                isArchived: isArchived === "true",
+                isPinned: isArchived === "true" ? false : note.isPinned,
+            },
+        });
+        res.status(200).json({
+            status: "success",
+            note: result,
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: "error",
+        });
+    }
+};
+
+export const pinNote = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user;
+        const noteId = req.params.id;
+        const { isPinned } = req.query;
+
+        if (isPinned !== "true" && isPinned !== "false") {
+            res.status(400).json({
+                status: "invalid input",
+            });
+            return;
+        }
+
+        const note = await db.note.findFirst({
+            where: {
+                AND: [{ id: noteId }, { userId }],
+            },
+        });
+
+        if (!note) {
+            res.status(404).json({
+                status: "not found",
+            });
+            return;
+        }
+
+        if (note.isArchived) {
+            res.status(400).json({
+                status: "cannot pin archived note",
+            });
+            return;
+        }
+
+        const result = await db.note.update({
+            where: {
+                id: noteId,
+            },
+            data: {
+                isPinned: isPinned === "true",
+            },
+        });
+        res.status(200).json({
+            status: "success",
+            note: result,
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: "error",
+        });
+    }
+};
