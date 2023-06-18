@@ -11,11 +11,12 @@ import {
     resetPasswordRequest,
     resetPassword,
     checkResetPasswordToken,
+    resendVerificationEmail,
 } from "../controllers/auth/authContoller";
 import {
     isAuthorized,
     validateResetPassword,
-    validateResetPasswordRequest,
+    validateEmailRequest,
     validateSignIn,
     validateSignUp,
 } from "../controllers/auth/authVallidation";
@@ -30,7 +31,8 @@ router.get("/refresh_token", handleRefreshToken);
 router.get("/sign_out", signOut);
 router.get("/terminate_all_sessions", isAuthorized, terminateAllSessions);
 router.get("/verify_user/:token", verifyUser);
-router.post("/reset_password_request", validateResetPasswordRequest, resetPasswordRequest);
+router.post("/resend_verification_email", validateEmailRequest, resendVerificationEmail);
+router.post("/reset_password_request", validateEmailRequest, resetPasswordRequest);
 router.post("/reset_password/:token", validateResetPassword, resetPassword);
 router.post("/reset_password_check/:token", checkResetPasswordToken);
 

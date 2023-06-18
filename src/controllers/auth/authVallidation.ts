@@ -55,14 +55,14 @@ export const validateSignIn = async (req: Request, res: Response, next: NextFunc
     }
 };
 
-const schemaResetPasswordRequest = zod.object({
+const schemaEmailRequest = zod.object({
     email: zod.string().nonempty({ message: "Enter your email" }).email({ message: "Enter a valid email" }),
 });
 
-export const validateResetPasswordRequest = async (req: Request, res: Response, next: NextFunction) => {
+export const validateEmailRequest = async (req: Request, res: Response, next: NextFunction) => {
     const formData = req.body;
     try {
-        await schemaResetPasswordRequest.parseAsync(formData);
+        await schemaEmailRequest.parseAsync(formData);
         next();
     } catch (err) {
         res.status(400).json({

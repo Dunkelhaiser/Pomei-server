@@ -308,58 +308,62 @@ export const verifyUser = async (req: Request, res: Response) => {
     }
 };
 
-// export const resendVerificationEmail = async (req: Request, res: Response) => {
-//     try {
-//         const { email } = req.body;
-//         const user = await db.user.findFirst({
-//             where: {
-//                 email,
-//             },
-//         });
+export const resendVerificationEmail = async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+        const user = await db.user.findFirst({
+            where: {
+                email,
+            },
+        });
 
-//         if (!user) {
-//             res.status(404).json({ message: "User not found" });
-//             return;
-//         }
+        if (!user) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
 
-//         if (user.isVerified) {
-//             res.status(403).json({ message: "Account is already verified" });
-//             return;
-//         }
+        if (user.isVerified) {
+            res.status(403).json({ message: "Account is already verified" });
+            return;
+        }
 
-//         const verificationToken = crypto.randomBytes(20).toString("hex");
+        const verificationToken = crypto.randomBytes(20).toString("hex");
 
-//         await db.user.update({
-//             where: { id: user.id },
-//             data: {
-//                 verificationEmail: {
-//                     create: {
-//                         token: verificationToken,
-//                         expiresAt: new Date(Date.now() + ONE_HOUR),
-//                     },
-//                 },
-//             },
-//         });
+        await db.verificationEmail.deleteMany({
+            where: { userId: user.id },
+        });
 
-//         await sendVerificationEmail(email, verificationToken);
+        await db.user.update({
+            where: { id: user.id },
+            data: {
+                verificationEmail: {
+                    create: {
+                        token: verificationToken,
+                        expiresAt: new Date(Date.now() + ONE_HOUR),
+                    },
+                },
+            },
+        });
 
-//         setTimeout(async () => {
-//             if (!user || user.isVerified) {
-//                 return;
-//             }
+        await sendVerificationEmail(email, verificationToken);
 
-//             await db.user.delete({ where: { id: user.id } });
-//         }, ONE_HOUR);
+        setTimeout(async () => {
+            if (!user || user.isVerified) {
+                return;
+            }
 
-//         res.status(201).json({
-//             status: "Verification email sent",
-//         });
-//     } catch (err) {
-//         res.status(400).json({
-//             error: "Invalid user data",
-//         });
-//     }
-// };
+            await db.user.delete({ where: { id: user.id } });
+        }, ONE_HOUR);
+
+        res.status(201).json({
+            status: "Verification email sent",
+        });
+    } catch (err) {
+        res.status(400).json({
+            error: "Invalid user data",
+        });
+    }
+};
 
 export const resetPasswordRequest = async (req: Request, res: Response) => {
     try {
