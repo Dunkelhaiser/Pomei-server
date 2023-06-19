@@ -221,6 +221,9 @@ export const archiveNote = async (req: AuthRequest, res: Response) => {
             data: {
                 isArchived: isArchived === "true",
                 isPinned: isArchived === "true" ? false : note.isPinned,
+                folder: {
+                    disconnect: true,
+                },
             },
         });
         res.status(200).json({
