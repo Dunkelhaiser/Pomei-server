@@ -328,6 +328,13 @@ export const addToFolder = async (req: AuthRequest, res: Response) => {
             return;
         }
 
+        if (note.isArchived) {
+            res.status(403).json({
+                status: "cannot add archived note to folder",
+            });
+            return;
+        }
+
         const result = await db.note.update({
             where: {
                 id: noteId,
