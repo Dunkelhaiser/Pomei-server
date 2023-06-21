@@ -33,41 +33,41 @@ model User{
 }
 
 model Note{
-    id String @id @default(uuid())
-    title String? @db.VarChar(255)
-    content String? @db.Text
-    isPinned Boolean @default(false)
-    isArchived Boolean @default(false)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId String
-    folder Folder? @relation(fields: [folderId], references: [id])
-    folderId String?
+  id String @id @default(uuid())
+  title String? @db.VarChar(255)
+  content String? @db.Text
+  isPinned Boolean @default(false)
+  isArchived Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  folder Folder? @relation(fields: [folderId], references: [id])
+  folderId String?
 
-    @@index([title], name: "noteTitle")
+  @@index([title], name: "noteTitle")
 }
 
 model Folder{
-    id String @id @default(uuid())
-    title String @db.VarChar(255)
-    color String? @db.VarChar(7)
-    isPinned Boolean @default(false)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId String
-    notes Note[]
+  id String @id @default(uuid())
+  title String @db.VarChar(255)
+  color String? @db.VarChar(7)
+  isPinned Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  notes Note[]
 
-    @@index([title], name: "folderTitle")
+  @@index([title], name: "folderTitle")
 }
 
 model RefreshToken {
   id          String   @id @default(uuid())
   token       String   @unique
-  revoked     Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  expiresAt   DateTime
   userId      String
   User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

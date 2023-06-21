@@ -3,10 +3,46 @@ import crypto from "crypto";
 import { createTransport } from "nodemailer";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { CronJob } from "cron";
 import db from "../../db";
 import { AuthRequest, Payload } from "../../models/AuthRequest";
 
+const job = new CronJob("59 23 * * *", async () => {
+    await db.refreshToken.deleteMany({
+        where: {
+            expiresAt: {
+                lte: new Date(),
+            },
+        },
+    });
+    await db.verificationEmail.deleteMany({
+        where: {
+            expiresAt: {
+                lte: new Date(),
+            },
+        },
+    });
+    await db.resetPasswordEmail.deleteMany({
+        where: {
+            expiresAt: {
+                lte: new Date(),
+            },
+        },
+    });
+    await db.user.deleteMany({
+        where: {
+            isVerified: false,
+            createdAt: {
+                lte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+            },
+        },
+    });
+});
+
+job.start();
+
 const ONE_HOUR = 60 * 60 * 1000;
+const THIRTY_DAYS = 2592000000;
 
 const transporter = createTransport({
     service: "gmail",
@@ -64,7 +100,7 @@ export const signUp = async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(password, 12);
         const verificationToken = crypto.randomBytes(20).toString("hex");
 
-        const createdUser = await db.user.create({
+        await db.user.create({
             data: {
                 username,
                 email,
@@ -79,19 +115,6 @@ export const signUp = async (req: Request, res: Response) => {
         });
 
         await sendVerificationEmail(email, verificationToken);
-
-        setTimeout(async () => {
-            const user = await db.user.findUnique({
-                where: { id: createdUser.id },
-                include: { verificationEmail: true },
-            });
-
-            if (!user || user.isVerified) {
-                return;
-            }
-
-            await db.user.delete({ where: { id: createdUser.id } });
-        }, ONE_HOUR);
 
         res.status(201).json({
             status: "Verification email sent",
@@ -157,6 +180,7 @@ export const signIn = async (req: Request, res: Response) => {
             data: {
                 token: refreshToken,
                 userId: existingUser.id,
+                expiresAt: new Date(Date.now() + THIRTY_DAYS),
             },
         });
         res.cookie("jwt", refreshToken, { httpOnly: true, sameSite: "none", secure: true, maxAge: 1000 * 60 * 60 * 24 * 30 });
@@ -347,14 +371,6 @@ export const resendVerificationEmail = async (req: Request, res: Response) => {
 
         await sendVerificationEmail(email, verificationToken);
 
-        setTimeout(async () => {
-            if (!user || user.isVerified) {
-                return;
-            }
-
-            await db.user.delete({ where: { id: user.id } });
-        }, ONE_HOUR);
-
         res.status(201).json({
             status: "Verification email sent",
         });
@@ -407,10 +423,6 @@ export const resetPasswordRequest = async (req: Request, res: Response) => {
         };
 
         await transporter.sendMail(mailOptions);
-
-        setTimeout(async () => {
-            await db.resetPasswordEmail.deleteMany({ where: { token: resetPasswordToken } });
-        }, ONE_HOUR);
 
         res.status(201).json({
             message: "Reset password email sent",
