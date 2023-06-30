@@ -1,6 +1,21 @@
 import { Response } from "express";
+import { CronJob } from "cron";
 import db from "../../db";
 import { AuthRequest } from "../../models/AuthRequest";
+
+const THIRTY_DAYS = 2592000000;
+const job = new CronJob("59 23 * * *", async () => {
+    await db.note.deleteMany({
+        where: {
+            isDeleted: true,
+            deletedAt: {
+                lte: new Date(Date.now() - THIRTY_DAYS),
+            },
+        },
+    });
+});
+
+job.start();
 
 export const loadNotes = async (req: AuthRequest, res: Response) => {
     try {
@@ -86,6 +101,87 @@ export const updateNote = async (req: AuthRequest, res: Response) => {
     }
 };
 
+export const moveToBin = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user;
+        const noteId = req.params.id;
+
+        const note = await db.note.findFirst({
+            where: {
+                AND: [{ id: noteId }, { userId }],
+            },
+        });
+
+        if (!note) {
+            res.status(404).json({
+                status: "not found",
+            });
+            return;
+        }
+
+        const result = await db.note.update({
+            where: {
+                id: noteId,
+            },
+            data: {
+                isDeleted: true,
+                deletedAt: new Date(),
+                isPinned: false,
+                isArchived: false,
+                folder: {
+                    disconnect: true,
+                },
+            },
+        });
+        res.status(200).json({
+            status: "success",
+            note: result,
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: "error",
+        });
+    }
+};
+
+export const restoreNote = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user;
+        const noteId = req.params.id;
+
+        const note = await db.note.findFirst({
+            where: {
+                AND: [{ id: noteId }, { userId }],
+            },
+        });
+
+        if (!note) {
+            res.status(404).json({
+                status: "not found",
+            });
+            return;
+        }
+
+        const result = await db.note.update({
+            where: {
+                id: noteId,
+            },
+            data: {
+                isDeleted: false,
+                deletedAt: null,
+            },
+        });
+        res.status(200).json({
+            status: "success",
+            note: result,
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: "error",
+        });
+    }
+};
+
 export const deleteNote = async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.user;
@@ -107,6 +203,38 @@ export const deleteNote = async (req: AuthRequest, res: Response) => {
         await db.note.delete({
             where: {
                 id: noteId,
+            },
+        });
+        res.status(200).json({
+            status: "success",
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: "error",
+        });
+    }
+};
+
+export const emptyBin = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user;
+
+        const notes = await db.note.findMany({
+            where: {
+                AND: [{ userId }, { isDeleted: true }],
+            },
+        });
+
+        if (notes.length === 0) {
+            res.status(404).json({
+                status: "not found",
+            });
+            return;
+        }
+
+        await db.note.deleteMany({
+            where: {
+                AND: [{ userId }, { isDeleted: true }],
             },
         });
         res.status(200).json({

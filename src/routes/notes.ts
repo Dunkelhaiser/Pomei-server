@@ -6,10 +6,13 @@ import {
     createNote,
     deleteNote,
     duplicateNote,
+    emptyBin,
     loadNote,
     loadNotes,
+    moveToBin,
     pinNote,
     removeFromFolder,
+    restoreNote,
     updateNote,
 } from "../controllers/notes/notesController";
 import { validateNote } from "../controllers/notes/notesVallidation";
@@ -20,7 +23,10 @@ router.get("/", isAuthorized, loadNotes);
 router.post("/", isAuthorized, validateNote, createNote);
 router.get("/:id", isAuthorized, loadNote);
 router.put("/:id", isAuthorized, validateNote, updateNote);
-router.delete("/:id", isAuthorized, deleteNote);
+router.delete("/move_to_bin/:id", isAuthorized, moveToBin);
+router.put("/restore/:id", isAuthorized, restoreNote);
+router.delete("/delete/:id", isAuthorized, deleteNote);
+router.delete("/empty_bin", isAuthorized, emptyBin);
 router.post("/duplicate/:id", isAuthorized, duplicateNote);
 router.put("/archive/:id", isAuthorized, archiveNote);
 router.put("/pin/:id", isAuthorized, pinNote);
