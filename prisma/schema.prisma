@@ -38,8 +38,10 @@ model Note{
   content String? @db.Text
   isPinned Boolean @default(false)
   isArchived Boolean @default(false)
+  isDeleted Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
   folder Folder? @relation(fields: [folderId], references: [id])
