@@ -107,7 +107,7 @@ export const isAuthorized = async (req: AuthRequest, res: Response, next: NextFu
         next();
     } catch (err) {
         res.status(401).json({
-            error: "Unauthorized",
+            error: "Invalid token",
         });
     }
 };
