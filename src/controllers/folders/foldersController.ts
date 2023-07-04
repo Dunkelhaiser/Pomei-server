@@ -11,12 +11,12 @@ export const loadFolders = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(200).json({
-            status: "success",
+            status: "loaded folders",
             folders: results,
         });
     } catch (err) {
-        res.status(404).json({
-            status: "not found",
+        res.status(500).json({
+            status: "failed to load folders",
         });
     }
 };
@@ -36,12 +36,12 @@ export const createFolder = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(201).json({
-            status: "success",
+            status: "created folder",
             folder: result,
         });
     } catch (err) {
-        res.status(400).json({
-            status: "error",
+        res.status(500).json({
+            status: "failed to create folder",
         });
     }
 };
@@ -60,7 +60,7 @@ export const updateFolder = async (req: AuthRequest, res: Response) => {
 
         if (!folder) {
             res.status(404).json({
-                status: "not found",
+                status: "folder not found",
             });
             return;
         }
@@ -76,12 +76,12 @@ export const updateFolder = async (req: AuthRequest, res: Response) => {
         });
 
         res.status(200).json({
-            status: "success",
+            status: "updated folder",
             folder: result,
         });
     } catch (err) {
-        res.status(400).json({
-            status: "error",
+        res.status(500).json({
+            status: "failed to update folder",
         });
     }
 };
@@ -99,7 +99,7 @@ export const deleteFolder = async (req: AuthRequest, res: Response) => {
 
         if (!folder) {
             res.status(404).json({
-                status: "not found",
+                status: "folder not found",
             });
             return;
         }
@@ -111,11 +111,11 @@ export const deleteFolder = async (req: AuthRequest, res: Response) => {
         });
 
         res.status(200).json({
-            status: "success",
+            status: "deleted folder",
         });
     } catch (err) {
         res.status(400).json({
-            status: "error",
+            status: "failed to delete folder",
         });
     }
 };
@@ -141,7 +141,7 @@ export const pinFolder = async (req: AuthRequest, res: Response) => {
 
         if (!folder) {
             res.status(404).json({
-                status: "not found",
+                status: "folder not found",
             });
             return;
         }
@@ -156,12 +156,12 @@ export const pinFolder = async (req: AuthRequest, res: Response) => {
         });
 
         res.status(200).json({
-            status: "success",
+            status: `folder ${isPinned === "true" ? "pinned" : "unpinned"}`,
             folder: result,
         });
     } catch (err) {
-        res.status(400).json({
-            status: "error",
+        res.status(500).json({
+            status: "failed to modify folder",
         });
     }
 };
@@ -179,7 +179,7 @@ export const getNotes = async (req: AuthRequest, res: Response) => {
 
         if (!folder) {
             res.status(404).json({
-                status: "not found",
+                status: "folder not found",
             });
             return;
         }
@@ -191,12 +191,12 @@ export const getNotes = async (req: AuthRequest, res: Response) => {
         });
 
         res.status(200).json({
-            status: "success",
+            status: "got notes from folder",
             notes: results,
         });
     } catch (err) {
-        res.status(400).json({
-            status: "error",
+        res.status(500).json({
+            status: "failed to get notes from folder",
         });
     }
 };
