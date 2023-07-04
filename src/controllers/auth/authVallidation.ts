@@ -101,7 +101,12 @@ export const isAuthorized = async (req: AuthRequest, res: Response, next: NextFu
     try {
         const { authorization } = req.headers;
         const token = authorization?.split(" ")[1];
-        if (!token) throw new Error("Unauthorized");
+        if (!token) {
+            res.status(401).json({
+                status: "Unauthorized",
+            });
+            return;
+        }
         const decodedToken = jwt.verify(token, `${process.env.JWT_ACCESS_SECRET}`) as Payload;
         req.user = decodedToken.id;
         next();
