@@ -272,7 +272,12 @@ export const getAuthUser = async (req: AuthRequest, res: Response) => {
 export const handleRefreshToken = async (req: Request, res: Response) => {
     try {
         const refreshToken = req.cookies.jwt;
-        if (!refreshToken) throw new Error("Unauthorized");
+        if (!refreshToken) {
+            res.status(201).json({
+                status: "Unauthorized",
+            });
+            return;
+        }
         const existingUser = await db.user.findFirst({
             where: {
                 refreshTokens: {
@@ -282,17 +287,27 @@ export const handleRefreshToken = async (req: Request, res: Response) => {
                 },
             },
         });
-        if (!existingUser) throw new Error("Unauthorized");
+        if (!existingUser) {
+            res.status(201).json({
+                status: "Unauthorized",
+            });
+            return;
+        }
         const decodedToken = jwt.verify(refreshToken, `${process.env.JWT_REFRESH_SECRET}`) as Payload;
-        if (existingUser.id !== decodedToken.id) throw new Error("Unauthorized");
+        if (existingUser.id !== decodedToken.id) {
+            res.status(201).json({
+                status: "Unauthorized",
+            });
+            return;
+        }
         const accessToken = jwt.sign({ id: decodedToken.id }, `${process.env.JWT_ACCESS_SECRET}`, { expiresIn: "30m" });
         res.status(201).json({
             status: "Access token refreshed",
             accessToken,
         });
     } catch (err) {
-        res.status(401).json({
-            status: "Unauthorized",
+        res.status(500).json({
+            status: "Failed to refresh access token",
         });
     }
 };
