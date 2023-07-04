@@ -92,7 +92,7 @@ export const signUp = async (req: Request, res: Response) => {
 
         if (isAvailable?.error) {
             res.status(409).json({
-                error: isAvailable.error,
+                status: isAvailable.error,
             });
             return;
         }
@@ -121,7 +121,7 @@ export const signUp = async (req: Request, res: Response) => {
         });
     } catch (err) {
         res.status(400).json({
-            error: "Invalid user data",
+            status: "Invalid user data",
         });
     }
 };
@@ -133,7 +133,7 @@ export const checkAvailableData = async (req: Request, res: Response) => {
 
         if (isAvailable?.error) {
             res.status(409).json({
-                error: isAvailable.error,
+                status: isAvailable.error,
             });
             return;
         }
@@ -142,7 +142,7 @@ export const checkAvailableData = async (req: Request, res: Response) => {
         });
     } catch (err) {
         res.status(400).json({
-            error: "Invalid user data",
+            status: "Invalid user data",
         });
     }
 };
@@ -157,20 +157,20 @@ export const signIn = async (req: Request, res: Response) => {
         });
         if (!existingUser) {
             res.status(401).json({
-                error: "Invalid username/email or password",
+                status: "Invalid username/email or password",
             });
             return;
         }
         const validPassword = await bcrypt.compare(password, existingUser.password);
         if (!validPassword) {
             res.status(401).json({
-                error: "Invalid username/email or password",
+                status: "Invalid username/email or password",
             });
             return;
         }
         if (!existingUser.isVerified) {
             res.status(403).json({
-                error: "Account is not verified",
+                status: "Account is not verified",
             });
             return;
         }
@@ -187,7 +187,7 @@ export const signIn = async (req: Request, res: Response) => {
         res.status(200).json({ accessToken });
     } catch (err) {
         res.status(400).json({
-            error: "Invalid user data",
+            status: "Invalid user data",
         });
     }
 };
@@ -218,7 +218,7 @@ export const signOut = async (req: AuthRequest, res: Response) => {
         res.sendStatus(204);
     } catch (err) {
         res.status(401).json({
-            error: "Unauthorized",
+            status: "Unauthorized",
         });
     }
 };
@@ -234,7 +234,7 @@ export const terminateAllSessions = async (req: AuthRequest, res: Response) => {
         res.sendStatus(204);
     } catch (err) {
         res.status(401).json({
-            error: "Unauthorized",
+            status: "Unauthorized",
         });
     }
 };
@@ -260,7 +260,7 @@ export const getAuthUser = async (req: AuthRequest, res: Response) => {
         });
     } catch (err) {
         res.status(401).json({
-            error: "Unauthorized",
+            status: "Unauthorized",
         });
     }
 };
@@ -287,7 +287,7 @@ export const handleRefreshToken = async (req: Request, res: Response) => {
         });
     } catch (err) {
         res.status(401).json({
-            error: "Unauthorized",
+            status: "Unauthorized",
         });
     }
 };
@@ -306,14 +306,14 @@ export const verifyUser = async (req: Request, res: Response) => {
         });
 
         if (!user || !verificationEmail) {
-            res.status(404).json({ message: "Invalid verification token" });
+            res.status(404).json({ status: "Invalid verification token" });
             return;
         }
 
         const isExpired = new Date() > verificationEmail.expiresAt;
 
         if (isExpired) {
-            res.status(403).json({ message: "Verification has expired" });
+            res.status(403).json({ status: "Verification has expired" });
             return;
         }
 
@@ -326,9 +326,9 @@ export const verifyUser = async (req: Request, res: Response) => {
             where: { id: verificationEmail.id },
         });
 
-        res.status(200).json({ message: "Account verified successfully" });
+        res.status(200).json({ status: "Account verified successfully" });
     } catch (err) {
-        res.status(403).json({ message: "Invalid verification token" });
+        res.status(403).json({ status: "Invalid verification token" });
     }
 };
 
@@ -342,12 +342,12 @@ export const resendVerificationEmail = async (req: Request, res: Response) => {
         });
 
         if (!user) {
-            res.status(404).json({ message: "User not found" });
+            res.status(404).json({ status: "User not found" });
             return;
         }
 
         if (user.isVerified) {
-            res.status(403).json({ message: "Account is already verified" });
+            res.status(403).json({ status: "Account is already verified" });
             return;
         }
 
@@ -376,7 +376,7 @@ export const resendVerificationEmail = async (req: Request, res: Response) => {
         });
     } catch (err) {
         res.status(400).json({
-            error: "Invalid user data",
+            status: "Invalid user data",
         });
     }
 };
@@ -387,7 +387,7 @@ export const resetPasswordRequest = async (req: Request, res: Response) => {
         const user = await db.user.findFirst({ where: { email } });
 
         if (!user) {
-            res.status(404).json({ message: "User not found" });
+            res.status(404).json({ status: "User not found" });
             return;
         }
 
@@ -425,11 +425,11 @@ export const resetPasswordRequest = async (req: Request, res: Response) => {
         await transporter.sendMail(mailOptions);
 
         res.status(201).json({
-            message: "Reset password email sent",
+            status: "Reset password email sent",
         });
     } catch (err) {
         res.status(400).json({
-            message: "Invalid user data",
+            status: "Invalid user data",
         });
     }
 };
@@ -446,17 +446,17 @@ export const checkResetPasswordToken = async (req: Request, res: Response) => {
         });
 
         if (!resetPasswordEmail || !user) {
-            res.status(404).json({ message: "Invalid reset password token" });
+            res.status(404).json({ status: "Invalid reset password token" });
             return;
         }
 
         const isExpired = new Date() > resetPasswordEmail.expiresAt;
 
         if (isExpired) {
-            res.status(403).json({ message: "Reset password link has expired" });
+            res.status(403).json({ status: "Reset password link has expired" });
         }
     } catch (err) {
-        res.status(403).json({ message: "Invalid reset password token" });
+        res.status(403).json({ status: "Invalid reset password token" });
     }
 };
 
@@ -473,14 +473,14 @@ export const resetPassword = async (req: Request, res: Response) => {
         });
 
         if (!resetPasswordEmail || !user) {
-            res.status(404).json({ message: "Invalid reset password token" });
+            res.status(404).json({ status: "Invalid reset password token" });
             return;
         }
 
         const isExpired = new Date() > resetPasswordEmail.expiresAt;
 
         if (isExpired) {
-            res.status(403).json({ message: "Reset password link has expired" });
+            res.status(403).json({ status: "Reset password link has expired" });
             return;
         }
 
@@ -495,8 +495,8 @@ export const resetPassword = async (req: Request, res: Response) => {
             where: { id: resetPasswordEmail.id },
         });
 
-        res.status(200).json({ message: "Password reset successfully" });
+        res.status(200).json({ status: "Password reset successfully" });
     } catch (err) {
-        res.status(403).json({ message: "Invalid reset password token" });
+        res.status(403).json({ status: "Invalid reset password token" });
     }
 };
