@@ -117,11 +117,11 @@ export const signUp = async (req: Request, res: Response) => {
         await sendVerificationEmail(email, verificationToken);
 
         res.status(201).json({
-            status: "Verification email sent",
+            status: "Account created successfully",
         });
     } catch (err) {
-        res.status(400).json({
-            status: "Invalid user data",
+        res.status(500).json({
+            status: "Failed to create account",
         });
     }
 };
@@ -141,8 +141,8 @@ export const checkAvailableData = async (req: Request, res: Response) => {
             status: "Data is available",
         });
     } catch (err) {
-        res.status(400).json({
-            status: "Invalid user data",
+        res.status(500).json({
+            status: "Failed to check data availability",
         });
     }
 };
@@ -184,7 +184,10 @@ export const signIn = async (req: Request, res: Response) => {
             },
         });
         res.cookie("jwt", refreshToken, { httpOnly: true, sameSite: "none", secure: true, maxAge: 1000 * 60 * 60 * 24 * 30 });
-        res.status(200).json({ accessToken });
+        res.status(200).json({
+            status: "Signed in successfully",
+            accessToken,
+        });
     } catch (err) {
         res.status(400).json({
             status: "Invalid user data",
@@ -256,11 +259,12 @@ export const getAuthUser = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(200).json({
+            status: "Retrieved user data",
             user,
         });
     } catch (err) {
-        res.status(401).json({
-            status: "Unauthorized",
+        res.status(500).json({
+            status: "Failed to retrieve user data",
         });
     }
 };
@@ -283,6 +287,7 @@ export const handleRefreshToken = async (req: Request, res: Response) => {
         if (existingUser.id !== decodedToken.id) throw new Error("Unauthorized");
         const accessToken = jwt.sign({ id: decodedToken.id }, `${process.env.JWT_ACCESS_SECRET}`, { expiresIn: "30m" });
         res.status(201).json({
+            status: "Access token refreshed",
             accessToken,
         });
     } catch (err) {
@@ -328,7 +333,7 @@ export const verifyUser = async (req: Request, res: Response) => {
 
         res.status(200).json({ status: "Account verified successfully" });
     } catch (err) {
-        res.status(403).json({ status: "Invalid verification token" });
+        res.status(500).json({ status: "Failed to verify account" });
     }
 };
 
@@ -375,8 +380,8 @@ export const resendVerificationEmail = async (req: Request, res: Response) => {
             status: "Verification email sent",
         });
     } catch (err) {
-        res.status(400).json({
-            status: "Invalid user data",
+        res.status(500).json({
+            status: "Failed to send verification email",
         });
     }
 };
@@ -428,8 +433,8 @@ export const resetPasswordRequest = async (req: Request, res: Response) => {
             status: "Reset password email sent",
         });
     } catch (err) {
-        res.status(400).json({
-            status: "Invalid user data",
+        res.status(500).json({
+            status: "Failed to send reset password email",
         });
     }
 };
@@ -456,7 +461,7 @@ export const checkResetPasswordToken = async (req: Request, res: Response) => {
             res.status(403).json({ status: "Reset password link has expired" });
         }
     } catch (err) {
-        res.status(403).json({ status: "Invalid reset password token" });
+        res.status(500).json({ status: "Failed to check reset token" });
     }
 };
 
@@ -497,6 +502,6 @@ export const resetPassword = async (req: Request, res: Response) => {
 
         res.status(200).json({ status: "Password reset successfully" });
     } catch (err) {
-        res.status(403).json({ status: "Invalid reset password token" });
+        res.status(500).json({ status: "Failed to reset password" });
     }
 };
