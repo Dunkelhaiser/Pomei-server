@@ -24,10 +24,11 @@ export const loadFolders = async (req: AuthRequest, res: Response) => {
 export const createFolder = async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.user;
-        const { title } = req.body;
+        const { title, color } = req.body;
         const result = await db.folder.create({
             data: {
                 title,
+                color,
                 user: {
                     connect: {
                         id: userId,
