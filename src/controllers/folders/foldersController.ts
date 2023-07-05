@@ -5,14 +5,30 @@ import { AuthRequest } from "../../models/AuthRequest";
 export const loadFolders = async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.user;
+
+        const page = Number(req.query.page) || 1;
+        const perPage = Number(req.query.size);
+        const order = req.query.order as "asc" | "desc";
+        const orderBy = req.query.orderBy as string;
+
+        const totalFolders = await db.folder.count({ where: { userId } });
+        const totalPages = Math.ceil(totalFolders / perPage) || 1;
         const results = await db.folder.findMany({
             where: {
                 userId,
             },
+            skip: perPage ? (page - 1) * perPage : undefined,
+            take: perPage || undefined,
+            orderBy: {
+                [orderBy]: order,
+            },
         });
+
         res.status(200).json({
             status: "loaded folders",
             folders: results,
+            totalFolders,
+            totalPages,
         });
     } catch (err) {
         res.status(500).json({

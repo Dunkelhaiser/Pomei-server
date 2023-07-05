@@ -20,14 +20,30 @@ job.start();
 export const loadNotes = async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.user;
+
+        const page = Number(req.query.page) || 1;
+        const perPage = Number(req.query.size);
+        const order = req.query.order as "asc" | "desc";
+        const orderBy = req.query.orderBy as string;
+
+        const totalNotes = await db.folder.count({ where: { userId } });
+        const totalPages = Math.ceil(totalNotes / perPage) || 1;
         const results = await db.note.findMany({
             where: {
                 userId,
             },
+            skip: perPage ? (page - 1) * perPage : undefined,
+            take: perPage || undefined,
+            orderBy: {
+                [orderBy]: order,
+            },
         });
+
         res.status(200).json({
             status: "loaded notes",
             notes: results,
+            totalNotes,
+            totalPages,
         });
     } catch (err) {
         res.status(500).json({
