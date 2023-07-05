@@ -31,6 +31,8 @@ export const loadNotes = async (req: AuthRequest, res: Response) => {
         const results = await db.note.findMany({
             where: {
                 userId,
+                isDeleted: false,
+                isArchived: false,
             },
             skip: perPage ? (page - 1) * perPage : undefined,
             take: perPage || undefined,
@@ -40,14 +42,14 @@ export const loadNotes = async (req: AuthRequest, res: Response) => {
         });
 
         res.status(200).json({
-            status: "loaded notes",
+            status: "Loaded notes",
             notes: results,
             totalNotes,
             totalPages,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to load notes",
+            status: "Failed to load notes",
         });
     }
 };
@@ -68,12 +70,12 @@ export const createNote = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(201).json({
-            status: "created note",
+            status: "Created note",
             note: result,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to create note",
+            status: "Failed to create note",
         });
     }
 };
@@ -92,7 +94,7 @@ export const updateNote = async (req: AuthRequest, res: Response) => {
 
         if (!note) {
             res.status(404).json({
-                status: "note not found",
+                status: "Note not found",
             });
             return;
         }
@@ -107,12 +109,12 @@ export const updateNote = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(200).json({
-            status: "updated note",
+            status: "Updated note",
             note: result,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to update note",
+            status: "Failed to update note",
         });
     }
 };
@@ -130,7 +132,7 @@ export const moveToBin = async (req: AuthRequest, res: Response) => {
 
         if (!note) {
             res.status(404).json({
-                status: "note not found",
+                status: "Note not found",
             });
             return;
         }
@@ -150,12 +152,12 @@ export const moveToBin = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(200).json({
-            status: "moved to bin",
+            status: "Note moved to bin successfully",
             note: result,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to move to bin",
+            status: "Failed to move note to bin",
         });
     }
 };
@@ -173,7 +175,7 @@ export const restoreNote = async (req: AuthRequest, res: Response) => {
 
         if (!note) {
             res.status(404).json({
-                status: "note not found",
+                status: "Note not found",
             });
             return;
         }
@@ -188,12 +190,12 @@ export const restoreNote = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(200).json({
-            status: "restored note",
+            status: "Restored note",
             note: result,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to restore note",
+            status: "Failed to restore note",
         });
     }
 };
@@ -211,7 +213,7 @@ export const deleteNote = async (req: AuthRequest, res: Response) => {
 
         if (!note) {
             res.status(404).json({
-                status: "note not found",
+                status: "Note not found",
             });
             return;
         }
@@ -222,11 +224,11 @@ export const deleteNote = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(200).json({
-            status: "deleted note",
+            status: "Deleted note",
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to delete note",
+            status: "Failed to delete note",
         });
     }
 };
@@ -243,7 +245,7 @@ export const emptyBin = async (req: AuthRequest, res: Response) => {
 
         if (notes.length === 0) {
             res.status(204).json({
-                status: "no notes to delete",
+                status: "No notes to delete",
             });
             return;
         }
@@ -254,11 +256,11 @@ export const emptyBin = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(200).json({
-            status: "emptied bin",
+            status: "Emptied bin",
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to empty bin",
+            status: "Failed to empty bin",
         });
     }
 };
@@ -276,7 +278,7 @@ export const duplicateNote = async (req: AuthRequest, res: Response) => {
 
         if (!note) {
             res.status(404).json({
-                status: "note not found",
+                status: "Note not found",
             });
             return;
         }
@@ -293,12 +295,12 @@ export const duplicateNote = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(201).json({
-            status: "duplicated note",
+            status: "Note duplicated successfully",
             note: result,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to duplicate note",
+            status: "Failed to duplicate note",
         });
     }
 };
@@ -316,18 +318,18 @@ export const loadNote = async (req: AuthRequest, res: Response) => {
 
         if (!note) {
             res.status(404).json({
-                status: "note not found",
+                status: "Note not found",
             });
             return;
         }
 
         res.status(200).json({
-            status: "loaded note",
+            status: "Loaded note",
             note,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to load note",
+            status: "Failed to load note",
         });
     }
 };
@@ -340,7 +342,7 @@ export const archiveNote = async (req: AuthRequest, res: Response) => {
 
         if (isArchived !== "true" && isArchived !== "false") {
             res.status(400).json({
-                status: "invalid input",
+                status: "Invalid input",
             });
             return;
         }
@@ -353,7 +355,7 @@ export const archiveNote = async (req: AuthRequest, res: Response) => {
 
         if (!note) {
             res.status(404).json({
-                status: "note not found",
+                status: "Note not found",
             });
             return;
         }
@@ -371,12 +373,12 @@ export const archiveNote = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(200).json({
-            status: `note ${isArchived === "true" ? "archived" : "unarchived"}`,
+            status: `Note ${isArchived === "true" ? "archived" : "unarchived"}`,
             note: result,
         });
     } catch (err) {
         res.status(400).json({
-            status: "failed to archive note",
+            status: "Failed to archive note",
         });
     }
 };
@@ -402,14 +404,14 @@ export const pinNote = async (req: AuthRequest, res: Response) => {
 
         if (!note) {
             res.status(404).json({
-                status: "note not found",
+                status: "Note not found",
             });
             return;
         }
 
         if (note.isArchived) {
             res.status(400).json({
-                status: "cannot pin archived note",
+                status: "Cannot pin archived note",
             });
             return;
         }
@@ -423,12 +425,12 @@ export const pinNote = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(200).json({
-            status: `note ${isPinned === "true" ? "pinned" : "unpinned"}`,
+            status: `Note ${isPinned === "true" ? "pinned" : "unpinned"}`,
             note: result,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to pin note",
+            status: "Failed to pin note",
         });
     }
 };
@@ -447,7 +449,7 @@ export const addToFolder = async (req: AuthRequest, res: Response) => {
 
         if (!note) {
             res.status(404).json({
-                status: "note not found",
+                status: "Note not found",
             });
             return;
         }
@@ -460,21 +462,21 @@ export const addToFolder = async (req: AuthRequest, res: Response) => {
 
         if (!folder) {
             res.status(404).json({
-                status: "folder not found",
+                status: "Folder not found",
             });
             return;
         }
 
         if (note.folderId !== null) {
             res.status(400).json({
-                status: "note already in folder",
+                status: "Note already in folder",
             });
             return;
         }
 
         if (note.isArchived) {
             res.status(403).json({
-                status: "cannot add archived note to folder",
+                status: "Cannot add archived note to folder",
             });
             return;
         }
@@ -492,12 +494,12 @@ export const addToFolder = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(200).json({
-            status: "added to folder",
+            status: "Added to folder",
             note: result,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to add to folder",
+            status: "Failed to add to folder",
         });
     }
 };
@@ -515,7 +517,7 @@ export const removeFromFolder = async (req: AuthRequest, res: Response) => {
 
         if (!note) {
             res.status(404).json({
-                status: "note not found",
+                status: "Note not found",
             });
             return;
         }
@@ -531,12 +533,12 @@ export const removeFromFolder = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(200).json({
-            status: "removed from folder",
+            status: "Removed from folder",
             note: result,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to remove from folder",
+            status: "Failed to remove from folder",
         });
     }
 };

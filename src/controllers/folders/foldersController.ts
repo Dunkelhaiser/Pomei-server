@@ -25,14 +25,14 @@ export const loadFolders = async (req: AuthRequest, res: Response) => {
         });
 
         res.status(200).json({
-            status: "loaded folders",
+            status: "Loaded folders",
             folders: results,
             totalFolders,
             totalPages,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to load folders",
+            status: "Failed to load folders",
         });
     }
 };
@@ -53,12 +53,12 @@ export const createFolder = async (req: AuthRequest, res: Response) => {
             },
         });
         res.status(201).json({
-            status: "created folder",
+            status: "Created folder",
             folder: result,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to create folder",
+            status: "Failed to create folder",
         });
     }
 };
@@ -77,7 +77,7 @@ export const updateFolder = async (req: AuthRequest, res: Response) => {
 
         if (!folder) {
             res.status(404).json({
-                status: "folder not found",
+                status: "Folder not found",
             });
             return;
         }
@@ -93,12 +93,12 @@ export const updateFolder = async (req: AuthRequest, res: Response) => {
         });
 
         res.status(200).json({
-            status: "updated folder",
+            status: "Updated folder",
             folder: result,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to update folder",
+            status: "Failed to update folder",
         });
     }
 };
@@ -116,7 +116,7 @@ export const deleteFolder = async (req: AuthRequest, res: Response) => {
 
         if (!folder) {
             res.status(404).json({
-                status: "folder not found",
+                status: "Folder not found",
             });
             return;
         }
@@ -128,11 +128,11 @@ export const deleteFolder = async (req: AuthRequest, res: Response) => {
         });
 
         res.status(200).json({
-            status: "deleted folder",
+            status: "Deleted folder",
         });
     } catch (err) {
         res.status(400).json({
-            status: "failed to delete folder",
+            status: "Failed to delete folder",
         });
     }
 };
@@ -145,7 +145,7 @@ export const pinFolder = async (req: AuthRequest, res: Response) => {
 
         if (isPinned !== "true" && isPinned !== "false") {
             res.status(400).json({
-                status: "invalid input",
+                status: "Invalid input",
             });
             return;
         }
@@ -158,7 +158,7 @@ export const pinFolder = async (req: AuthRequest, res: Response) => {
 
         if (!folder) {
             res.status(404).json({
-                status: "folder not found",
+                status: "Folder not found",
             });
             return;
         }
@@ -173,12 +173,12 @@ export const pinFolder = async (req: AuthRequest, res: Response) => {
         });
 
         res.status(200).json({
-            status: `folder ${isPinned === "true" ? "pinned" : "unpinned"}`,
+            status: `Folder ${isPinned === "true" ? "pinned" : "unpinned"}`,
             folder: result,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to modify folder",
+            status: "Failed to modify folder",
         });
     }
 };
@@ -196,7 +196,7 @@ export const getNotes = async (req: AuthRequest, res: Response) => {
 
         if (!folder) {
             res.status(404).json({
-                status: "folder not found",
+                status: "Folder not found",
             });
             return;
         }
@@ -208,12 +208,12 @@ export const getNotes = async (req: AuthRequest, res: Response) => {
         });
 
         res.status(200).json({
-            status: "got notes from folder",
+            status: "Got notes from folder",
             notes: results,
         });
     } catch (err) {
         res.status(500).json({
-            status: "failed to get notes from folder",
+            status: "Failed to get notes from folder",
         });
     }
 };
