@@ -7,6 +7,7 @@ import {
     deleteNote,
     duplicateNote,
     emptyBin,
+    loadBin,
     loadNote,
     loadNotes,
     moveToBin,
@@ -21,6 +22,7 @@ const router = Router();
 
 router.get("/", isAuthorized, loadNotes);
 router.post("/", isAuthorized, validateNote, createNote);
+router.get("/bin", isAuthorized, loadBin);
 router.get("/:id", isAuthorized, loadNote);
 router.put("/:id", isAuthorized, validateNote, updateNote);
 router.delete("/move_to_bin/:id", isAuthorized, moveToBin);
