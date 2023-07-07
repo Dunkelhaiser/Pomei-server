@@ -36,9 +36,7 @@ export const loadNotes = async (req: AuthRequest, res: Response) => {
             },
             skip: perPage ? (page - 1) * perPage : undefined,
             take: perPage || undefined,
-            orderBy: {
-                [orderBy]: order,
-            },
+            orderBy: [{ isPinned: "desc" }, { [orderBy]: order }],
         });
 
         res.status(200).json({

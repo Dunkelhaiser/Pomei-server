@@ -210,6 +210,7 @@ export const getNotes = async (req: AuthRequest, res: Response) => {
         res.status(200).json({
             status: "Got notes from folder",
             notes: results,
+            folder,
         });
     } catch (err) {
         res.status(500).json({
