@@ -429,6 +429,12 @@ export const archiveNote = async (req: AuthRequest, res: Response) => {
             });
             return;
         }
+        if (note.isDeleted) {
+            res.status(400).json({
+                status: "Cannot archive deleted note",
+            });
+            return;
+        }
 
         const result = await db.note.update({
             where: {
@@ -482,6 +488,12 @@ export const pinNote = async (req: AuthRequest, res: Response) => {
         if (note.isArchived) {
             res.status(400).json({
                 status: "Cannot pin archived note",
+            });
+            return;
+        }
+        if (note.isDeleted) {
+            res.status(400).json({
+                status: "Cannot pin deleted note",
             });
             return;
         }
