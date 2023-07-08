@@ -203,6 +203,7 @@ export const getNotes = async (req: AuthRequest, res: Response) => {
             where: {
                 folderId,
             },
+            orderBy: [{ isPinned: "desc" }],
         });
 
         res.status(200).json({
