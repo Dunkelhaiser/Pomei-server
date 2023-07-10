@@ -169,6 +169,13 @@ export const updateNote = async (req: AuthRequest, res: Response) => {
             return;
         }
 
+        if (note.isDeleted) {
+            res.status(400).json({
+                status: "Cannot update deleted note",
+            });
+            return;
+        }
+
         const result = await db.note.update({
             where: {
                 id: noteId,
