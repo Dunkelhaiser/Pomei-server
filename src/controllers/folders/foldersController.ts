@@ -186,6 +186,14 @@ export const getNotes = async (req: AuthRequest, res: Response) => {
         const userId = req.user;
         const folderId = req.params.id;
 
+        const page = Number(req.query.page) || 1;
+        const perPage = Number(req.query.size);
+        const order = req.query.order as "asc" | "desc";
+        const orderBy = req.query.orderBy as string;
+
+        const totalNotes = await db.folder.count({ where: { userId } });
+        const totalPages = Math.ceil(totalNotes / perPage) || 1;
+
         const folder = await db.folder.findFirst({
             where: {
                 AND: [{ id: folderId }, { userId }],
@@ -203,13 +211,17 @@ export const getNotes = async (req: AuthRequest, res: Response) => {
             where: {
                 folderId,
             },
-            orderBy: [{ isPinned: "desc" }],
+            skip: perPage ? (page - 1) * perPage : undefined,
+            take: perPage || undefined,
+            orderBy: [{ isPinned: "desc" }, { [orderBy]: order }],
         });
 
         res.status(200).json({
             status: "Got notes from folder",
             notes: results,
             folder,
+            totalNotes,
+            totalPages,
         });
     } catch (err) {
         res.status(500).json({
