@@ -6,7 +6,9 @@
     "main": "index.js",
     "scripts": {
         "build": "tsc",
-        "dev": "nodemon ./src/app.ts"
+        "dev": "nodemon ./src/app.ts",
+        "migrate": "npx prisma migrate dev",
+        "start": "npm install && npm run migrate && npm run build"
     },
     "author": "KaeserOfHonour",
     "license": "ISC",
