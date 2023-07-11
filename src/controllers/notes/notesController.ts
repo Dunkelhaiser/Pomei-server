@@ -582,6 +582,16 @@ export const addToFolder = async (req: AuthRequest, res: Response) => {
                 },
             },
         });
+
+        await db.folder.update({
+            where: {
+                id: folderId,
+            },
+            data: {
+                updatedAt: new Date(),
+            },
+        });
+
         res.status(200).json({
             status: "Added to folder",
             note: result,
@@ -621,6 +631,7 @@ export const removeFromFolder = async (req: AuthRequest, res: Response) => {
                 },
             },
         });
+
         res.status(200).json({
             status: "Removed from folder",
             note: result,
