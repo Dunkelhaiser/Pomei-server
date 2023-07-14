@@ -523,7 +523,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 
 export const deleteAccount = async (req: AuthRequest, res: Response) => {
     try {
-        const userId = req.user;
+        const { userId } = req.params;
         await db.user.delete({
             where: { id: userId },
         });
