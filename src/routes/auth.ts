@@ -12,6 +12,7 @@ import {
     resetPassword,
     checkResetPasswordToken,
     resendVerificationEmail,
+    deleteAccount,
 } from "../controllers/auth/authContoller";
 import {
     isAuthorized,
@@ -35,5 +36,6 @@ router.post("/resend_verification_email", validateEmailRequest, resendVerificati
 router.post("/reset_password_request", validateEmailRequest, resetPasswordRequest);
 router.post("/reset_password/:token", validateResetPassword, resetPassword);
 router.post("/reset_password_check/:token", checkResetPasswordToken);
+router.delete("/delete_account/:id", deleteAccount);
 
 export default router;

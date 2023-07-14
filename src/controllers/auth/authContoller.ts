@@ -520,3 +520,19 @@ export const resetPassword = async (req: Request, res: Response) => {
         res.status(500).json({ status: "Failed to reset password" });
     }
 };
+
+export const deleteAccount = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user;
+        await db.user.delete({
+            where: { id: userId },
+        });
+        res.status(200).json({
+            status: "Account deleted successfully",
+        });
+    } catch (err) {
+        res.status(500).json({
+            status: "Failed to delete account",
+        });
+    }
+};
