@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { z as zod } from "zod";
 
 const schemaNote = zod.object({
-    title: zod.string().max(255, { message: "Title must be at maximum 255 characters long" }),
-    content: zod.string(),
+    title: zod.string().max(255, { message: "Title must be at maximum 255 characters long" }).optional(),
+    content: zod.string().optional(),
 });
 
 export const validateNote = async (req: Request, res: Response, next: NextFunction) => {
