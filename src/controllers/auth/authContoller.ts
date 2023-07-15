@@ -536,3 +536,84 @@ export const deleteAccount = async (req: AuthRequest, res: Response) => {
         });
     }
 };
+
+export const changePassword = async (req: AuthRequest, res: Response) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user;
+        const user = await db.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            res.status(404).json({
+                status: "User not found",
+            });
+            return;
+        }
+        const validPassword = await bcrypt.compare(currentPassword, user.password);
+        if (!validPassword) {
+            res.status(401).json({
+                status: "Invalid current password",
+            });
+            return;
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+        await db.user.update({
+            where: { id: userId },
+            data: { password: hashedPassword },
+        });
+        res.status(200).json({
+            status: "Password changed successfully",
+        });
+    } catch (err) {
+        res.status(500).json({ status: "Failed to change password" });
+    }
+};
+
+export const updateAccount = async (req: AuthRequest, res: Response) => {
+    try {
+        const { username, email } = req.body;
+        const userId = req.user;
+        const user = await db.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            res.status(404).json({
+                status: "User not found",
+            });
+            return;
+        }
+
+        const emailExists = await db.user.findFirst({
+            where: { email, id: { not: userId } },
+        });
+
+        if (emailExists) {
+            res.status(409).json({
+                status: "Email already exists",
+            });
+            return;
+        }
+
+        const usernameExists = await db.user.findFirst({
+            where: { username, id: { not: userId } },
+        });
+
+        if (usernameExists) {
+            res.status(409).json({
+                status: "Username already exists",
+            });
+            return;
+        }
+
+        await db.user.update({
+            where: { id: userId },
+            data: { username, email },
+        });
+        res.status(200).json({
+            status: "User updated successfully",
+        });
+    } catch (err) {
+        res.status(500).json({ status: "Failed to update user" });
+    }
+};

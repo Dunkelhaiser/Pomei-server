@@ -13,6 +13,8 @@ import {
     checkResetPasswordToken,
     resendVerificationEmail,
     deleteAccount,
+    updateAccount,
+    changePassword,
 } from "../controllers/auth/authContoller";
 import {
     isAuthorized,
@@ -20,6 +22,8 @@ import {
     validateEmailRequest,
     validateSignIn,
     validateSignUp,
+    validateAccountChange,
+    validatePasswordChange,
 } from "../controllers/auth/authVallidation";
 
 const router = Router();
@@ -37,5 +41,7 @@ router.post("/reset_password_request", validateEmailRequest, resetPasswordReques
 router.post("/reset_password/:token", validateResetPassword, resetPassword);
 router.post("/reset_password_check/:token", checkResetPasswordToken);
 router.delete("/delete_account/:userId", deleteAccount);
+router.put("/update_account/:userId", isAuthorized, validateAccountChange, updateAccount);
+router.put("/update_password/:userId", isAuthorized, validatePasswordChange, changePassword);
 
 export default router;
